@@ -5,53 +5,40 @@ const dboper = require('./operations');
 
 const url = 'mongodb://localhost:27017/conFusion';
 
-MongoClient.connect(url, (err, db) => {
+MongoClient.connect(url).then((db) => {
 
-    assert.equal(err,null);
+    console.log('Connected correctly to server');
 
-    console.log('Connected to server!');
+    dboper.insertDocument(db, { name: "Vadonut", description: "Test"},
+        "dishes")
+        .then((result) => {
+            console.log("Insert Document:\n", result.ops);
 
-    dboper.insertDocument(db, { name: "Vadonut", description: "yummy dish"}, "dishes", (result) => {
-        console.log("Insert document: ", result.ops);
+            return dboper.findDocuments(db, "dishes");
+        })
+        .then((docs) => {
+            console.log("Found Documents:\n", docs);
 
-        dboper.findDocuments(db, "dishes", (docs) => {
-            console.log("Found document: ", docs);
+            return dboper.updateDocument(db, { name: "Vadonut" },
+                    { description: "Updated Test" }, "dishes");
 
-            dboper.updateDocument(db, { name: "Vadonut" }, { description: "Test update yummy"}, "dishes", (result) => {
-                console.log("Updated document: ", result.result);
-                dboper.findDocuments(db, "dishes", (docs) => {
-                    console.log("Found updated documents: ", docs); 
+        })
+        .then((result) => {
+            console.log("Updated Document:\n", result.result);
 
-                    db.dropCollection("dishes", (res) => {
-                        console.log("Dropped collection: ", res);
+            return dboper.findDocuments(db, "dishes");
+        })
+        .then((docs) => {
+            console.log("Found Updated Documents:\n", docs);
+                            
+            return db.dropCollection("dishes");
+        })
+        .then((result) => {
+            console.log("Dropped Collection: ", result);
 
-                        db.close();
-                    });
-                });
-            });
-        });
-    });
+            return db.close();
+        })
+        .catch((err) => console.log(err));
 
-    const collection = db.collection("dishes");
-    collection.insertOne({"name": "Uthappizza", "description": "test"},
-    (err, result) => {
-        assert.equal(err,null);
-
-        console.log("After Insert:\n");
-        console.log(result.ops);
-
-        collection.find({}).toArray((err, docs) => {
-            assert.equal(err,null);
-            
-            console.log("Found:\n");
-            console.log(docs);
-
-            db.dropCollection("dishes", (err, result) => {
-                assert.equal(err,null);
-
-                db.close();
-            });
-        });
-    });
-
-});
+})
+.catch((err) => console.log(err));
