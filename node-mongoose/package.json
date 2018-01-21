@@ -12,6 +12,6 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "mongodb": "^2.2.33",
-    "mongoose": "^4.6.1"
+    "mongoose": "^5.0.1"
   }
 }
